@@ -1,118 +1,372 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <title>Tabla del mapa del mundo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script type="text/javascript" src="https://www.x3dom.org/download/x3dom.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://www.x3dom.org/download/x3dom.css"/>
+  <link rel="stylesheet" type="text/css" href="https://www.x3dom.org/download/x3dom.css" />
   <style>
-    body {
-      font-family: 'Segoe UI', Helvetica, sans-serif;
-      text-align: center;
-      background-color: #4682B4; /* azul bonito */
-      margin: 0;
-      padding: 0;
+    :root{
+      --bg: #4682B4;
+      --controls-bg: #B0C4DE;
+      --text-on-bg: #ffffff;
+      --card-bg: rgba(255,255,255,0.95);
+      --max-width: 800px;
     }
-    h1 {
-      margin-top: 20px;
-      color: white;
+
+    /* Layout and typography */
+    body{
+      margin:0;
+      font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-on-bg);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:20px;
     }
-    #preloader {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: #4682B4;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: white;
-      z-index: 9999;
+
+    h1{
+      margin:12px 0;
+      font-size:1.5rem;
+      text-align:center;
     }
-    x3d {
-      border: 1px solid #ccc;
-      margin: 20px auto;
-      display: block;
+
+    /* Preloader */
+    #preloader{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background-color:var(--bg);
+      color:var(--text-on-bg);
+      font-size:20px;
+      z-index:9999;
+      transition:opacity .35s ease;
     }
-    .controls {
-      margin-top: 20px;
+    #preloader.hidden{ opacity:0; pointer-events:none; display:none; }
+
+    /* Card that holds the viewer and UI */
+    .card{
+      width:100%;
+      max-width:var(--max-width);
+      background: transparent;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
     }
-    .controls button {
-      margin: 5px;
-      padding: 8px 12px;
-      font-size: 14px;
-      cursor: pointer;
-      background-color: #B0C4DE;
-      border: none;
-      border-radius: 4px;
+
+    /* Responsive X3D */
+    .viewer-wrap{
+      width:100%;
+      max-width:var(--max-width);
+      background:transparent;
+      padding:10px;
+      box-sizing:border-box;
     }
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: white;
+    x3d{
+      width:100%;
+      height:60vh;
+      max-height:600px;
+      display:block;
+      margin:0 auto;
+      border-radius:6px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.35);
+      background:#e9eef4;
+      border:1px solid rgba(0,0,0,0.12);
     }
-    .texture-preview {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      width: 120px;
-      border: 1px solid #aaa;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
-      background-color: white;
-      padding: 4px;
+
+    /* Controls */
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:center;
+      margin-top:12px;
     }
-    .texture-preview img {
-      width: 100%;
-      height: auto;
+    .controls button, .controls select, .controls input[type="range"]{
+      background:var(--controls-bg);
+      color:#111;
+      border:0;
+      padding:8px 12px;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:0.95rem;
+    }
+    .controls button:hover, .controls select:hover{
+      filter:brightness(.98);
+    }
+    .controls .compact { padding:6px 8px; font-size:0.88rem; }
+
+    /* Info panel */
+    .info {
+      margin-top:14px;
+      width:100%;
+      max-width:var(--max-width);
+      background:var(--card-bg);
+      color:#111;
+      padding:12px;
+      border-radius:8px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.12);
+    }
+    .info h2{ margin:0 0 8px 0; font-size:1.05rem; color:#222; }
+    .info p{ margin:6px 0; font-size:0.95rem; color:#333; }
+
+    /* Texture preview */
+    .texture-preview{
+      position:fixed;
+      bottom:12px;
+      right:12px;
+      width:110px;
+      background:white;
+      padding:6px;
+      border-radius:6px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.18);
+      z-index:800;
+    }
+    .texture-preview img{ width:100%; height:auto; display:block; border-radius:4px; }
+
+    /* Help modal (simple) */
+    #help{
+      position:fixed;
+      bottom:18px;
+      left:18px;
+      background:var(--card-bg);
+      color:#111;
+      padding:10px 12px;
+      border-radius:8px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.12);
+      max-width:260px;
+      font-size:0.9rem;
+      z-index:800;
+    }
+
+    /* Dark mode */
+    .dark body, .dark :root { /* not used but kept for extensibility */ }
+
+    /* Small screens */
+    @media (max-width:520px){
+      x3d{ height:55vh; }
+      .controls{ gap:6px; }
+      .texture-preview{ display:none; }
     }
   </style>
 </head>
 <body>
   <div id="preloader">Cargando modelo…</div>
 
-  <h1>Tabla del mapa del mundo</h1>
+  <div class="card" role="main">
+    <h1>Tabla del mapa del mundo</h1>
 
-  <x3d id="visor" width="800px" height="600px" showStat="false" showNavigation="true">
-    <scene>
-      <Viewpoint description="Vista inicial" position="0 0 5" orientation="0 0 0 0"></Viewpoint>
-      <Transform translation="0 -1 0">
-        <inline id="modelo" url="trabajo_03.x3d"></inline>
-      </Transform>
-    </scene>
-  </x3d>
+    <div class="viewer-wrap" aria-label="Visor 3D con modelo">
+      <!-- X3DOM viewer with accessible alternative text as fallback -->
+      <x3d id="visor" showStat="false" showNavigation="true" aria-label="Visor 3D: si no carga, ver la sección Información">
+        <scene>
+          <!-- Viewpoints for quick camera changes -->
+          <Viewpoint id="vp-front" description="Frontal" position="0 0 5" orientation="0 0 0 0"></Viewpoint>
+          <Viewpoint id="vp-top" description="Superior" position="0 4 0" orientation="1 0 0 -1.57"></Viewpoint>
+          <Viewpoint id="vp-side" description="Lateral" position="5 0 0" orientation="0 1 0 1.57"></Viewpoint>
+          <!-- Transform to center model visually; ajustar translation si es necesario -->
+          <Transform id="recenter" translation="0 -1 0">
+            <inline id="modelo" url="trabajo_03.x3d"></inline>
+          </Transform>
+        </scene>
+      </x3d>
+    </div>
 
-  <div class="controls">
-    <button onclick="resetView()">Reiniciar vista</button>
-    <button onclick="toggleWireframe()">Modo wireframe</button>
+    <!-- Controls row -->
+    <div class="controls" role="toolbar" aria-label="Controles del visor">
+      <button id="btn-center" class="compact" title="Centrar modelo">Centrar modelo</button>
+      <button id="btn-reset" class="compact" title="Reiniciar vista">Reiniciar vista</button>
+
+      <!-- Camera selector -->
+      <select id="cameraSelect" title="Seleccionar cámara" aria-label="Seleccionar cámara">
+        <option value="vp-front">Frontal</option>
+        <option value="vp-top">Superior</option>
+        <option value="vp-side">Lateral</option>
+      </select>
+
+      <!-- Zoom slider -->
+      <label style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:0.9rem;color:#fff;">Zoom</span>
+        <input id="zoomRange" type="range" min="1.6" max="10" step="0.1" value="5" />
+      </label>
+
+      <!-- Wireframe -->
+      <button id="btn-wireframe" class="compact" title="Activar modo wireframe">Modo wireframe</button>
+
+      <!-- Background selector -->
+      <select id="bgSelect" title="Cambiar fondo" aria-label="Cambiar color de fondo">
+        <option value="#4682B4">Azul bonito</option>
+        <option value="#FFFFFF">Blanco</option>
+        <option value="#2F4F4F">Gris oscuro</option>
+        <option value="#87CEEB">Cielo claro</option>
+      </select>
+
+      <!-- Dark / Light toggle -->
+      <button id="btn-theme" class="compact" title="Alternar modo oscuro">Oscuro/Claro</button>
+
+      <!-- Help -->
+      <button id="btn-help" class="compact" title="Cómo navegar">¿Cómo navegar?</button>
+    </div>
+
+    <!-- Technical info and fallback text -->
+    <div class="info" id="info">
+      <h2>Ficha técnica</h2>
+      <p><strong>Software usado</strong> Blender, MeshLab</p>
+      <p><strong>Número de caras</strong> 25.000</p>
+      <p><strong>Formato</strong> .x3d con textura .png</p>
+      <p><strong>Autoría</strong> Ana Braojos Martorell</p>
+      <p id="fallback" style="margin-top:8px;color:#555">Texto alternativo para el visor: si el modelo no carga, comprueba la conexión o visita el repositorio para descargar el archivo. </p>
+    </div>
   </div>
 
-  <footer>
-    Realizado por Ana Braojos
-  </footer>
+  <!-- Texture preview -->
+  <div class="texture-preview" aria-hidden="true">
+    <img src="the-map-of-the-world-tablet_tex_01.png" alt="Textura aplicada" />
+  </div>
 
-  <div class="texture-preview">
-    <img src="the-map-of-the-world-tablet_tex_01.png" alt="Textura aplicada">
+  <!-- Small help box -->
+  <div id="help" style="display:none;">
+    <strong>Cómo navegar</strong>
+    <p style="margin:6px 0 0 0;">Usa el ratón para rotar; rueda para acercar/alejar; clic derecho para opciones. En pantallas táctiles, pellizca para zoom y arrastra para rotar.</p>
   </div>
 
   <script>
-    // Preloader
+    // Short helpers
+    const visor = document.getElementById('visor');
+    const runtime = visor.runtime;
+    const preloader = document.getElementById('preloader');
+    const zoomRange = document.getElementById('zoomRange');
+    const btnReset = document.getElementById('btn-reset');
+    const btnCenter = document.getElementById('btn-center');
+    const btnWire = document.getElementById('btn-wireframe');
+    const bgSelect = document.getElementById('bgSelect');
+    const cameraSelect = document.getElementById('cameraSelect');
+    const btnTheme = document.getElementById('btn-theme');
+    const btnHelp = document.getElementById('btn-help');
+    const helpBox = document.getElementById('help');
+    const transformNode = document.getElementById('recenter');
+
+    // Hide preloader once X3DOM has initialized and model is loaded
     window.addEventListener('load', () => {
-      document.getElementById('preloader').style.display = 'none';
+      // small delay to allow x3dom inline to set up
+      setTimeout(() => {
+        preloader.classList.add('hidden');
+        // entry animation
+        entryAnimation();
+      }, 350);
     });
 
-    // Reset view
-    function resetView() {
-      const runtime = document.getElementById('visor').runtime;
-      runtime.resetView();
+    // ENTRY ANIMATION Fade in and slight rotation
+    function entryAnimation(){
+      const x3dEl = document.getElementById('visor');
+      x3dEl.style.transition = 'transform 1s ease, opacity 1s ease';
+      x3dEl.style.opacity = '0';
+      x3dEl.style.transform = 'scale(.98) rotateY(20deg)';
+      requestAnimationFrame(()=> {
+        x3dEl.style.opacity = '1';
+        x3dEl.style.transform = 'scale(1) rotateY(0deg)';
+      });
+      // optional slow rotation during 1s using a viewpoint tween fallback (visual only)
+      // no permanent animation to avoid interfering with user controls
     }
 
-    // Toggle wireframe
-    let wireframe = false;
-    function toggleWireframe() {
-      const visor = document.getElementById('visor');
-      visor.runtime.togglePoints(true);
-      visor.runtime.toggleWireframe(!wireframe);
-      wireframe = !wireframe;
+    // RESET view using runtime API
+    btnReset.addEventListener('click', () => {
+      runtime.resetView();
+      // reset zoom slider to default
+      zoomRange.value = 5;
+    });
+
+    // CENTER model visually by resetting the transform translation to recommended center
+    btnCenter.addEventListener('click', () => {
+      // set translation to the value that centers visually; adjust if required
+      transformNode.setAttribute('translation', '0 -1 0');
+      // reset camera to front
+      bindView('vp-front');
+    });
+
+    // CAMERA selector binding
+    function bindView(id){
+      const view = document.getElementById(id);
+      if(!view) return;
+      // set_bind attribute triggers X3DOM to bind that viewpoint
+      view.setAttribute('set_bind', 'true');
+      // remove it shortly after to allow re-binding later
+      setTimeout(()=> view.removeAttribute('set_bind'), 300);
+    }
+    cameraSelect.addEventListener('change', (e)=> bindView(e.target.value));
+
+    // Wireframe toggle
+    let wire = false;
+    btnWire.addEventListener('click', () => {
+      runtime.togglePoints(true);
+      runtime.toggleWireframe(!wire);
+      wire = !wire;
+      btnWire.style.background = wire ? '#9fb3c9' : 'var(--controls-bg)';
+    });
+
+    // Zoom slider controlling camera distance by updating active Viewpoint position z
+    // We adjust the 'vp-front' position z value to zoom in/out
+    zoomRange.addEventListener('input', () => {
+      const z = parseFloat(zoomRange.value);
+      const vp = document.getElementById('vp-front');
+      if(vp) vp.setAttribute('position', `0 0 ${z}`);
+      // ensure camera is bound
+      bindView('vp-front');
+    });
+
+    // Background color selector
+    bgSelect.addEventListener('change', (e) => {
+      document.body.style.backgroundColor = e.target.value;
+      // ensure preloader matches
+      preloader.style.backgroundColor = e.target.value;
+      // try to adjust text color for contrast if white background selected
+      if(e.target.value === '#FFFFFF'){
+        document.querySelectorAll('h1').forEach(el => el.style.color = '#111');
+        document.querySelectorAll('.info').forEach(el => el.style.background = '#fff');
+      } else {
+        document.querySelectorAll('h1').forEach(el => el.style.color = '#fff');
+      }
+    });
+
+    // Theme toggle simple behavior (swap card background)
+    let dark = true;
+    btnTheme.addEventListener('click', () => {
+      dark = !dark;
+      if(!dark){
+        document.querySelectorAll('.info').forEach(el => el.style.background = '#222;');
+      } else {
+        document.querySelectorAll('.info').forEach(el => el.style.background = 'var(--card-bg)');
+      }
+    });
+
+    // Help toggle
+    btnHelp.addEventListener('click', () => {
+      helpBox.style.display = helpBox.style.display === 'none' || helpBox.style.display === '' ? 'block' : 'none';
+    });
+
+    // Accessibility: if X3D fails to load inline content, show fallback text in #fallback
+    document.getElementById('fallback').textContent += ' Si el visor no muestra el modelo, descarga trabajo_03.x3d desde el repositorio.';
+
+    // Ensure initial viewpoint z matches zoom slider value
+    (function initView(){
+      const z = parseFloat(zoomRange.value);
+      const vp = document.getElementById('vp-front');
+      if(vp) vp.setAttribute('position', `0 0 ${z}`);
+      // small delay bind initial view so it's active
+      setTimeout(()=> bindView('vp-front'), 150);
+    })();
+
+    // Make sure interactions with runtime do not error if runtime not ready
+    // Guard helpers
+    function safeRuntimeCall(fn){
+      try { fn(); } catch(e) { console.warn('Runtime call failed', e); }
     }
   </script>
 </body>
