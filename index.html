@@ -9,28 +9,30 @@
     body {
       font-family: 'Segoe UI', Helvetica, sans-serif;
       text-align: center;
-      background-color: #b4d1e8;
+      background-color: #4682B4; /* azul bonito */
       margin: 0;
       padding: 0;
     }
     h1 {
       margin-top: 20px;
+      color: white;
     }
     #preloader {
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background-color: #b4d1e8;
+      background-color: #4682B4;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
-      color: #333;
+      color: white;
       z-index: 9999;
     }
     x3d {
       border: 1px solid #ccc;
-      margin-top: 20px;
+      margin: 20px auto;
+      display: block;
     }
     .controls {
       margin-top: 20px;
@@ -40,11 +42,14 @@
       padding: 8px 12px;
       font-size: 14px;
       cursor: pointer;
+      background-color: #B0C4DE;
+      border: none;
+      border-radius: 4px;
     }
     footer {
       margin-top: 40px;
       font-size: 14px;
-      color: #333;
+      color: white;
     }
     .texture-preview {
       position: fixed;
@@ -67,22 +72,15 @@
 
   <h1>Tabla del mapa del mundo</h1>
 
-  <!-- Visor del modelo -->
   <x3d id="visor" width="800px" height="600px" showStat="false" showNavigation="true">
     <scene>
       <Viewpoint description="Vista inicial" position="0 0 5" orientation="0 0 0 0"></Viewpoint>
-      <Viewpoint description="Vista alternativa" position="2 2 4" orientation="0 1 0 0"></Viewpoint>
       <inline id="modelo" url="trabajo_03.x3d"></inline>
     </scene>
   </x3d>
 
-  <!-- Botones de control -->
   <div class="controls">
-    <button onclick="zoom(1.2)">Acercar</button>
-    <button onclick="zoom(0.8)">Alejar</button>
     <button onclick="resetView()">Reiniciar vista</button>
-    <button onclick="switchView()">Cambiar vista</button>
-    <button onclick="toggleTexture()">Mostrar/Ocultar textura</button>
     <button onclick="toggleWireframe()">Modo wireframe</button>
   </div>
 
@@ -90,7 +88,6 @@
     Realizado por Ana Braojos
   </footer>
 
-  <!-- Vista previa de la textura -->
   <div class="texture-preview">
     <img src="the-map-of-the-world-tablet_tex_01.png" alt="Textura aplicada">
   </div>
@@ -101,33 +98,10 @@
       document.getElementById('preloader').style.display = 'none';
     });
 
-    // Zoom
-    function zoom(factor) {
-      const runtime = document.getElementById('visor').runtime;
-      runtime.zoom(factor);
-    }
-
     // Reset view
     function resetView() {
       const runtime = document.getElementById('visor').runtime;
       runtime.resetView();
-    }
-
-    // Switch viewpoint
-    let currentView = 0;
-    function switchView() {
-      const views = document.getElementsByTagName('Viewpoint');
-      currentView = (currentView + 1) % views.length;
-      views[currentView].setAttribute('set_bind', 'true');
-    }
-
-    // Toggle texture
-    let textureVisible = true;
-    function toggleTexture() {
-      const inline = document.getElementById('modelo');
-      const url = textureVisible ? 'none.png' : 'trabajo_03.x3d';
-      inline.setAttribute('url', url);
-      textureVisible = !textureVisible;
     }
 
     // Toggle wireframe
