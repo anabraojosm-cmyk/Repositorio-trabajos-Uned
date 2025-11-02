@@ -2,21 +2,44 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Mi modelo 3D</title>
-  <!-- Carga el visor X3DOM -->
+  <title>Tabla del mapa del mundo</title>
   <script type="text/javascript" src="https://www.x3dom.org/download/x3dom.js"></script>
   <link rel="stylesheet" type="text/css" href="https://www.x3dom.org/download/x3dom.css"/>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: 'Segoe UI', Helvetica, sans-serif;
       text-align: center;
-      background-color: #b4d1e8; /* azul suave */
+      background-color: #b4d1e8;
       margin: 0;
       padding: 0;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    #preloader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: #b4d1e8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #333;
+      z-index: 9999;
     }
     x3d {
       border: 1px solid #ccc;
       margin-top: 20px;
+    }
+    .controls {
+      margin-top: 20px;
+    }
+    .controls button {
+      margin: 5px;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
     }
     footer {
       margin-top: 40px;
@@ -40,14 +63,28 @@
   </style>
 </head>
 <body>
-  <h1>Mi modelo 3D</h1>
+  <div id="preloader">Cargando modelo…</div>
+
+  <h1>Tabla del mapa del mundo</h1>
 
   <!-- Visor del modelo -->
-  <x3d width="800px" height="600px">
+  <x3d id="visor" width="800px" height="600px" showStat="false" showNavigation="true">
     <scene>
-      <inline url="trabajo_03.x3d"></inline>
+      <Viewpoint description="Vista inicial" position="0 0 5" orientation="0 0 0 0"></Viewpoint>
+      <Viewpoint description="Vista alternativa" position="2 2 4" orientation="0 1 0 0"></Viewpoint>
+      <inline id="modelo" url="trabajo_03.x3d"></inline>
     </scene>
   </x3d>
+
+  <!-- Botones de control -->
+  <div class="controls">
+    <button onclick="zoom(1.2)">Acercar</button>
+    <button onclick="zoom(0.8)">Alejar</button>
+    <button onclick="resetView()">Reiniciar vista</button>
+    <button onclick="switchView()">Cambiar vista</button>
+    <button onclick="toggleTexture()">Mostrar/Ocultar textura</button>
+    <button onclick="toggleWireframe()">Modo wireframe</button>
+  </div>
 
   <footer>
     Realizado por Ana Braojos
@@ -57,5 +94,50 @@
   <div class="texture-preview">
     <img src="the-map-of-the-world-tablet_tex_01.png" alt="Textura aplicada">
   </div>
+
+  <script>
+    // Preloader
+    window.addEventListener('load', () => {
+      document.getElementById('preloader').style.display = 'none';
+    });
+
+    // Zoom
+    function zoom(factor) {
+      const runtime = document.getElementById('visor').runtime;
+      runtime.zoom(factor);
+    }
+
+    // Reset view
+    function resetView() {
+      const runtime = document.getElementById('visor').runtime;
+      runtime.resetView();
+    }
+
+    // Switch viewpoint
+    let currentView = 0;
+    function switchView() {
+      const views = document.getElementsByTagName('Viewpoint');
+      currentView = (currentView + 1) % views.length;
+      views[currentView].setAttribute('set_bind', 'true');
+    }
+
+    // Toggle texture
+    let textureVisible = true;
+    function toggleTexture() {
+      const inline = document.getElementById('modelo');
+      const url = textureVisible ? 'none.png' : 'trabajo_03.x3d';
+      inline.setAttribute('url', url);
+      textureVisible = !textureVisible;
+    }
+
+    // Toggle wireframe
+    let wireframe = false;
+    function toggleWireframe() {
+      const visor = document.getElementById('visor');
+      visor.runtime.togglePoints(true);
+      visor.runtime.toggleWireframe(!wireframe);
+      wireframe = !wireframe;
+    }
+  </script>
 </body>
 </html>
